@@ -1,20 +1,22 @@
 class Datum < ApplicationRecord
-  require 'csv'
+  ROUND_NUMBER = 4
 
-  def self.import!(file)
-    Datum.delete_all
-    CSV.foreach(file.path, headers: false) do |row|
-      p datum_array = row.first.split("\s")
-      Datum.create(x: datum_array.first,y:datum_array.last)
-    end
-  end
-
-  class << self
-    def average_x
-      sum(:x).to_f / count
-    end
-    def average_y
-      sum(:y).to_f / count
-    end
-  end
+  extend ConfidenceInterval
+  extend Import
+  extend Quantiles
+  NORMAL_QUANTILE = normal_distribution.round(ROUND_NUMBER)
+  STUDENT_QUANTILE = student_distribution.round(ROUND_NUMBER)
+  #normal_distribution #1.96
+  extend Statistic
+  extend EvenCorrelationCoefficient
+  extend SpearmanCoefficient
+  extend KendallCorrelation
+  extend RelationCorrelation
+  extend Significance
+  extend RegressionCoefficient
+  extend NormRegressionCoefficient
+  extend ConfidenceIntervalForRegression
+  extend ConfidenceIntervalForPredictedValues
+  extend Ftest
+  extend DiagnosticDiagram
 end

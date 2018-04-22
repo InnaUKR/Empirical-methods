@@ -1,4 +1,4 @@
-module KendallCorelation
+module KendallCorrelation
   def kendall_value
     n = count
     s = kendall_v

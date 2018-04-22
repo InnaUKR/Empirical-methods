@@ -1,0 +1,209 @@
+<div id="container" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
+
+<table class="right-table">
+  <thead>
+  <tr>
+    <th></th>
+    <th>Значення оцінки</th>
+    <th>Дисперсія</th>
+    <th>Статистика</th>
+    <th>Квантиль</th>
+    <th>Значущість</th>
+    <th>Дов.інтервал</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <tr>
+    <td>a</td>
+    <td><%= @a.round(Datum::ROUND_NUMBER) %></td>
+    <td><%= @dispersion_a %></td>
+
+    <td><%= Datum.norm_statistic_a(@x, @y).round(Datum::ROUND_NUMBER) %></td>
+    <td><%= Datum::STUDENT_QUANTILE %></td>
+    <td><%= Datum.norm_significant_a(@x, @y) %></td>
+
+    <td><%= Datum.norm_interval_a(@x, @y) %></td>
+  </tr>
+  <tr>
+    <td>b</td>
+    <td><%= @b.round(Datum::ROUND_NUMBER) %></td>
+    <td><%= @dispersion_b%></td>
+
+    <td><%= Datum.norm_statistic_b(@x, @y).round(Datum::ROUND_NUMBER) %></td>
+    <td><%= Datum::STUDENT_QUANTILE %></td>
+    <td><%= Datum.norm_significant_b(@x, @y) %></td>
+
+    <td><%= Datum.norm_interval_b(@x, @y) %></td>
+  </tr>
+  </tbody>
+</table>
+<br>
+<p>F-test статистика: <%= @f_test_statistic %></p>
+<p>Квантиль фішера: <%= @fisher %></p>
+<h4>Вісновок: <%= Datum.f_test_conclusion(@f_test_statistic) %></h4>
+
+<p>Коефіцієнт детермінації: <%= @pirson_value**2 *100 %> % </p>
+
+<div id="diagnostic_diagram" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
+
+
+<script>
+    Highcharts.chart('container', {
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Кореляційне поле'
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'x'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'y'
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            x: 100,
+            y: 70,
+            floating: false,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+            borderWidth: 1
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormat: '{point.x} x, {point.y} y'
+                }
+            }
+        },
+        series: [{
+            color: 'rgba(223, 83, 83, .5)',
+            name: 'Точка',
+            data: <%= @data_x_y %>
+        },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Лінія регресії',
+                data: <%= @function_values %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Верхній довірчий інтервал на регресію',
+                data: <%= @top_regression %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Нижній довірчий інтервал на регресію',
+                data: <%= @bottom_regression %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Верхній довірчий інтервал для нового спостереження',
+                data: <%= @top_values  %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Нижній довірчий інтервал для нового спостереження',
+                data: <%= @bottom_values %>,
+            }]
+    });
+
+</script>
+
+<script>
+    Highcharts.chart('diagnostic_diagram', {
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Діагностична діаграма'
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'y ˆ ( x )'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'ε'
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            x: 100,
+            y: 70,
+            floating: false,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+            borderWidth: 1
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormat: '{point.x} x, {point.y} y'
+                }
+            }
+        },
+        series: [{
+            color: 'rgba(119, 152, 191, .5)',
+            name: 'Точка',
+            data: <%= @diagnostic_diagram_data_set %>
+        }]
+    });
+
+</script>

@@ -1,3 +1,4 @@
+
 <p id="notice"><%= notice %></p>
 
 <h1>Data</h1>
@@ -8,23 +9,330 @@
   <%= submit_tag 'Загрузить файл'%>
 <%end%>
 
-<table>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<div id="container" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
+
+
+<table class="right-table">
   <thead>
-    <tr>
-      <th>X</th>
-      <th>Y</th>
-      <th colspan="3"></th>
-    </tr>
+  <tr>
+    <th></th>
+    <th>Значення оцінки</th>
+    <th>Дисперсія</th>
+    <th>Статистика</th>
+    <th>Квантиль</th>
+    <th>Значущість</th>
+    <th>Дов.інтервал</th>
+  </tr>
   </thead>
 
   <tbody>
-    <% @data.each do |datum| %>
-      <tr>
-        <td><%= datum.x %></td>
-        <td><%= datum.y %></td>
-      </tr>
-    <% end %>
+  <tr>
+    <td>a</td>
+    <td><%= @a.round(Datum::ROUND_NUMBER) %></td>
+    <td><%= @dispersion_a %></td>
+
+    <td><%= Datum.statistic_a(@x, @y).round(Datum::ROUND_NUMBER) %></td>
+    <td><%= Datum::STUDENT_QUANTILE %></td>
+    <td><%= Datum.significant_a(@x, @y) %></td>
+
+    <td><%= Datum.interval_a(@x, @y) %></td>
+  </tr>
+  <tr>
+    <td>b</td>
+    <td><%= @b.round(Datum::ROUND_NUMBER) %></td>
+    <td><%= @dispersion_b%></td>
+
+    <td><%= Datum.statistic_b(@x, @y).round(Datum::ROUND_NUMBER) %></td>
+    <td><%= Datum::STUDENT_QUANTILE %></td>
+    <td><%= Datum.significant_b(@x, @y) %></td>
+
+    <td><%= Datum.interval_b(@x, @y) %></td>
+  </tr>
+  </tbody>
+</table>
+<br>
+
+<p>F-test статистика: <%= @f_test_statistic %></p>
+<p>Квантиль фішера: <%= @fisher %></p>
+<h4>Вісновок: <%= Datum.f_test_conclusion(@f_test_statistic) %></h4>
+
+<p>Коефіцієнт детермінації: <%= @pirson_value**2 *100 %> % </p>
+
+<div id="diagnostic_diagram" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
+
+
+<table class="right-table">
+  <thead>
+  <tr>
+    <th> </th>
+    <th> </th>
+    <th>x</th>
+    <th>y</th>
+  </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td rowspan="2">Середнє</td>
+      <td>Оцінка</td>
+      <td><%= Datum.average(:x) %></td>
+      <td><%= Datum.average(:y) %></td>
+    </tr>
+    <tr>
+      <td>Дов. інтервал</td>
+      <td><%= Datum.average_interval(:x) %></td>
+      <td><%= Datum.average_interval(:y) %></td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">Середньоквадратичне</td>
+      <td>Оцінка</td>
+      <td><%= Datum.medium_square(:x) %></td>
+      <td><%= Datum.medium_square(:y) %></td>
+    </tr>
+    <tr>
+      <td>Дов. інтервал</td>
+      <td><%= Datum.medium_square_interval(:x) %></td>
+      <td><%= Datum.medium_square_interval(:y) %></td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">Асиметрія</td>
+      <td>Оцінка</td>
+      <td><%= Datum.asymmetry(:x) %></td>
+      <td><%= Datum.asymmetry(:y) %></td>
+    </tr>
+    <tr>
+      <td>Дов. інтервал</td>
+      <td><%= Datum.asymmetry_interval(:x) %></td>
+      <td><%= Datum.asymmetry_interval(:y) %></td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">Ексцес</td>
+      <td>Оцінка</td>
+      <td><%= Datum.excess(:x) %></td>
+      <td><%= Datum.excess(:y) %></td>
+    </tr>
+    <tr>
+      <td>Дов. інтервал</td>
+      <td><%= Datum.excess_interval(:x) %></td>
+      <td><%= Datum.excess_interval(:y) %></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<table class="right-table">
+  <thead>
+  <tr>
+    <th> </th>
+    <th>Значення</th>
+    <th>Статистика</th>
+    <th>Квантиль</th>
+    <th>Значущість</th>
+    <th>Дов.інтервал</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <tr>
+    <td>Парний коефіцієнт кореляції</td>
+    <td><%= Datum.even_value %></td>
+    <td><%= Datum.even_statistic %></td>
+    <td><%= Datum::STUDENT_QUANTILE %></td>
+    <td><%= Datum.even_significance %></td>
+    <td><%= Datum.even_interval %></td>
+  </tr>
+  <tr>
+    <td>Кореляційне відношення</td>
+    <td><%= Datum.relation_value %></td>
+    <td><%= Datum.relation_statistic %></td>
+    <td><%= Datum.count_fisher_quantile %></td>
+    <td><%= Datum.relation_significance %></td>
+    <td>-</td>
+  </tr>
+
+  <tr>
+    <td>Коефіцієнт Спірмена</td>
+    <td><%= Datum.spirman_value %></td>
+    <td><%= Datum.spirman_statistic %></td>
+    <td><%= Datum::STUDENT_QUANTILE %></td>
+    <td><%= Datum.spirman_significance %></td>
+    <td>-</td>
+  </tr>
+
+  <tr>
+    <td>Коефіцієнт Кендалла</td>
+    <td><%= Datum.kendall_value %></td>
+    <td><%= Datum.kendall_statistic %></td>
+    <td><%= Datum::NORMAL_QUANTILE %></td>
+    <td><%= Datum.kendall_significance %></td>
+    <td>-</td>
+  </tr>
+
   </tbody>
 </table>
 
 <br>
+
+<script>
+    Highcharts.chart('container', {
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Кореляційне поле'
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'x'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'y'
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            x: 100,
+            y: 70,
+            floating: false,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+            borderWidth: 1
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormat: '{point.x} x, {point.y} y'
+                }
+            }
+        },
+        series: [{
+            color: 'rgba(223, 83, 83, .5)',
+            name: 'Точка',
+            data: <%= @data_x_y %>
+        },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Лінія регресії',
+                data: <%= @function_values %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Верхній довірчий інтервал на регресію',
+                data: <%= @top_regression %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Нижній довірчий інтервал на регресію',
+                data: <%= @bottom_regression %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Верхній довірчий інтервал для нового спостереження',
+                data: <%= @top_values  %>,
+            },
+            {
+                type: 'spline',
+                inverted: true,
+                name: 'Нижній довірчий інтервал для нового спостереження',
+                data: <%= @bottom_values %>,
+            }]
+    });
+
+</script>
+
+<script>
+    Highcharts.chart('diagnostic_diagram', {
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Діагностична діаграма'
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'y ˆ ( x )'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'ε'
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'top',
+            x: 100,
+            y: 70,
+            floating: false,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+            borderWidth: 1
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    pointFormat: '{point.x} x, {point.y} y'
+                }
+            }
+        },
+        series: [{
+            color: 'rgba(119, 152, 191, .5)',
+            name: 'Точка',
+            data: <%= @diagnostic_diagram_data_set %>
+        }]
+    });
+
+</script>
